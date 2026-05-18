@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Student Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="public/css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+      <p>Loading data...</p>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <main id="loginView" class="auth-layout">
+      <section class="auth-card">
+        <h1>Smart Student Management</h1>
+        <p>Sign in to continue to the admin dashboard.</p>
+        <form id="loginForm" class="auth-form">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" name="email" type="email" required />
+
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" name="password" type="password" minlength="6" required />
+
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <small>Default after seeding: admin@smartsms.com / Admin@123</small>
+      </section>
+    </main>
+
+    <div id="appView" class="app-layout hidden">
+      <aside class="sidebar">
+        <div>
+          <h2>Smart SMS</h2>
+          <p>Admin Panel</p>
+        </div>
+        <nav>
+          <button class="nav-item active" data-section="dashboardSection">Dashboard</button>
+          <button class="nav-item" data-section="studentsSection">Students</button>
+          <button class="nav-item" data-section="coursesSection">Courses</button>
+          <button class="nav-item" data-section="attendanceSection">Attendance</button>
+          <button class="nav-item" data-section="settingsSection">Settings</button>
+        </nav>
+        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+      </aside>
+
+      <section class="content">
+        <header class="topbar">
+          <h1 id="sectionTitle">Dashboard</h1>
+          <div class="topbar-actions">
+            <button id="themeToggleBtn" class="btn btn-secondary">Toggle Dark Mode</button>
+            <span id="adminBadge" class="badge">Admin</span>
+          </div>
+        </header>
+
+        <section id="dashboardSection" class="panel-section">
+          <div class="cards-grid">
+            <article class="metric-card">
+              <h3>Total Students</h3>
+              <p id="totalStudentsCard">0</p>
+            </article>
+            <article class="metric-card">
+              <h3>Total Courses</h3>
+              <p id="totalCoursesCard">0</p>
+            </article>
+            <article class="metric-card">
+              <h3>Attendance Percentage</h3>
+              <p id="attendanceCard">0%</p>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <article class="card-block">
+              <h3>Monthly Admissions</h3>
+              <canvas id="admissionChart"></canvas>
+            </article>
+            <article class="card-block">
+              <h3>Course Distribution</h3>
+              <canvas id="courseChart"></canvas>
+            </article>
+          </div>
+
+          <article class="card-block">
+            <h3>Recent Activities</h3>
+            <ul id="recentActivitiesList" class="activity-list"></ul>
+          </article>
+        </section>
+
+        <section id="studentsSection" class="panel-section hidden">
+          <div class="toolbar">
+            <button id="addStudentBtn" class="btn btn-primary">Add Student</button>
+            <button id="exportCsvBtn" class="btn btn-secondary">Export CSV</button>
+            <button id="exportPdfBtn" class="btn btn-secondary">Export PDF</button>
+          </div>
+
+          <div class="filters-grid">
+            <input id="searchInput" type="search" placeholder="Search by ID, name, email, phone" />
+            <select id="courseFilter">
+              <option value="">All Courses</option>
+            </select>
+            <select id="genderFilter">
+              <option value="">All Genders</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-sort="id">ID</th>
+                  <th data-sort="name">Name</th>
+                  <th data-sort="email">Email</th>
+                  <th data-sort="course">Course</th>
+                  <th>Phone</th>
+                  <th>Gender</th>
+                  <th data-sort="dob">DOB</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination" id="paginationContainer"></div>
+        </section>
+
+        <section id="coursesSection" class="panel-section hidden">
+          <article class="card-block">
+            <h3>Courses</h3>
+            <p>This section is ready for course management extension.</p>
+            <ul id="coursesPreview" class="activity-list"></ul>
+          </article>
+        </section>
+
+        <section id="attendanceSection" class="panel-section hidden">
+          <article class="card-block">
+            <h3>Attendance</h3>
+            <p>Attendance analytics is reflected in the dashboard card and charts.</p>
+          </article>
+        </section>
+
+        <section id="settingsSection" class="panel-section hidden">
+          <article class="card-block">
+            <h3>Settings</h3>
+            <p>Use dark mode toggle and authentication controls from top/right panel.</p>
+          </article>
+        </section>
+      </section>
+    </div>
+
+    <div id="studentModal" class="modal hidden">
+      <div class="modal-content">
+        <h3 id="studentModalTitle">Add Student</h3>
+        <form id="studentForm" class="student-form">
+          <input type="hidden" id="studentDbId" />
+
+          <label for="studentCode">Student ID</label>
+          <input id="studentCode" name="student_code" required />
+
+          <label for="fullName">Name</label>
+          <input id="fullName" name="full_name" required minlength="2" />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+
+          <label for="course">Course</label>
+          <select id="course" name="course_id" required></select>
+
+          <label for="phoneNumber">Phone Number</label>
+          <input id="phoneNumber" name="phone_number" required />
+
+          <label for="address">Address</label>
+          <textarea id="address" name="address" rows="2" required></textarea>
+
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" required>
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="dateOfBirth">Date of Birth</label>
+          <input id="dateOfBirth" name="date_of_birth" type="date" required />
+
+          <div class="form-actions">
+            <button type="button" id="closeModalBtn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="public/js/app.js"></script>
+  </body>
+</html>
